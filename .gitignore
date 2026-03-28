@@ -10,7 +10,6 @@ data/ephem_*.db
 # Node
 frontend/node_modules/
 frontend/dist/
-frontend/package-lock.json
 
 # Claude Code and agentic-team pipeline (local tooling, generated output)
 .claude/
