@@ -141,23 +141,34 @@ export async function buildYearCalendar(nakshatraId, year, timezone, cityLabel) 
 }
 
 /**
- * Convert a local wall-clock time in a given IANA timezone to UTC milliseconds.
- * Strategy: binary-search the UTC offset by probing Intl.DateTimeFormat.
+ * Return the UTC epoch ms at which the given local wall-clock time occurs in `timezone`.
+ *
+ * Fix: the previous implementation subtracted the raw hour difference, which gave a
+ * 24h error for timezones behind UTC (e.g. Seattle UTC-8: midnight was computed as
+ * Jan 3 08:00 UTC instead of Jan 4 08:00 UTC), causing the previous day's nakshatra
+ * transitions to bleed into the current day's display.
+ *
+ * Correct approach: treat the naive UTC time as a probe, read the local time it maps
+ * to as a "fake UTC" timestamp, then shift by (naiveMs - localMs) to land on the
+ * true UTC instant.
  */
 function _localWallToUTCMs(year, month, day, hour, minute, second, timezone) {
-  // Start with a naive UTC guess, then correct using the actual offset.
   const naiveMs = Date.UTC(year, month - 1, day, hour, minute, second)
-  // Read what local time this UTC corresponds to
+  const localMs = _localMsAt(naiveMs, timezone)
+  return naiveMs + (naiveMs - localMs)
+}
+
+/** Return the local time at utcMs expressed as a "fake UTC" ms value (date parts only, no offset). */
+function _localMsAt(utcMs, timezone) {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', second: '2-digit',
     hour12: false,
-  }).formatToParts(new Date(naiveMs))
+  }).formatToParts(new Date(utcMs))
   const get = (type) => parseInt(parts.find((p) => p.type === type).value, 10)
-  const localH = get('hour') === 24 ? 0 : get('hour')
-  const diffMs = (hour * 3600 + minute * 60 + second - localH * 3600 - get('minute') * 60 - get('second')) * 1000
-  return naiveMs + diffMs
+  const h = get('hour')
+  return Date.UTC(get('year'), get('month') - 1, get('day'), h === 24 ? 0 : h, get('minute'), get('second'))
 }
 
 function _msToUTCStr(ms) {
