@@ -4,15 +4,36 @@ __pycache__/
 *.pyc
 *.pyo
 
-# SQLite pre-computed data (large, generated locally)
+# SQLite pre-computed data (large, generated locally — run precompute.py)
 data/ephem_*.db
 
 # Node
 frontend/node_modules/
 frontend/dist/
+frontend/package-lock.json
 
-# Misc
+# Claude Code and agentic-team pipeline (local tooling, generated output)
+.claude/
+CLAUDE.md
+artifacts/
+engine/
+
+# MCP server config (contains local paths)
+.mcp.json
+
+# JetBrains IDE
+.idea/
+*.iml
+
+# macOS
 .DS_Store
-*.env
 
-.idea
+# Env files
+*.env
+.env.*
+
+# PDF outputs (generated artefacts)
+*.pdf
+
+# uv lock (committed if you want reproducible installs, excluded here for flexibility)
+# uv.lock

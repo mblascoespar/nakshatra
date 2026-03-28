@@ -1,0 +1,31 @@
+[project]
+name = "nakshatra"
+version = "0.2.0"
+description = "Vedic astrology Tarabalam calendar generator"
+requires-python = ">=3.11"
+dependencies = [
+    "pyswisseph==2.10.3.2",
+    "mcp>=1.26.0",
+    "jsonschema>=4.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["engine/tests"]
+markers = [
+    "invariant: handler enforces orchestrator ownership of metadata fields",
+    "lifecycle: correct versioning behavior through v1/v2/approve chain",
+    "contract: DAG node boundary handoffs between agents",
+    "renderer: artifact-to-text rendering output",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["engine"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
