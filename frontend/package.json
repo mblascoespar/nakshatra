@@ -9,17 +9,18 @@
     "test": "vitest"
   },
   "dependencies": {
+    "jspdf": "^4.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^4.5.4"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.3.4",
-    "tailwindcss": "^3.4.6",
     "autoprefixer": "^10.4.19",
+    "jsdom": "^24.0.0",
     "postcss": "^8.4.40",
-    "vitest": "^2.0.0",
-    "jsdom": "^24.0.0"
+    "tailwindcss": "^3.4.6",
+    "vite": "^5.3.4",
+    "vitest": "^2.0.0"
   }
 }

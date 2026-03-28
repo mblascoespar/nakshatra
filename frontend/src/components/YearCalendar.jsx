@@ -2,6 +2,7 @@ import { useState } from 'react'
 import MonthGrid from './MonthGrid'
 import DayDetailModal from './DayDetailModal'
 import useCalendarStore from '../store/useCalendarStore'
+import { generatePdf } from '../utils/generatePdf'
 
 const BUCKET_LEGEND = [
   { bucket: 'very_good', label: 'Very Good', color: 'bg-green-400 border-green-500' },
@@ -14,28 +15,12 @@ const BUCKET_LEGEND = [
 export default function YearCalendar({ calendarData }) {
   const [selectedDay, setSelectedDay] = useState(null)
   const [downloading, setDownloading] = useState(false)
-  const { selectedNakshatra, year, timezone, lat, lon, locationLabel } = useCalendarStore()
+  const { locationLabel } = useCalendarStore()
 
   async function handleDownloadPdf() {
     setDownloading(true)
     try {
-      const params = new URLSearchParams({
-        nakshatra: selectedNakshatra.id,
-        year,
-        tz: timezone,
-        lat,
-        lon,
-        location: locationLabel,
-      })
-      const resp = await fetch(`/api/calendar/year/pdf?${params}`)
-      if (!resp.ok) throw new Error('PDF generation failed')
-      const blob = await resp.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `tarabalam_${year}_${calendarData.nakshatra.name.replace(/ /g, '_')}.pdf`
-      a.click()
-      URL.revokeObjectURL(url)
+      await generatePdf(calendarData, locationLabel)
     } finally {
       setDownloading(false)
     }
