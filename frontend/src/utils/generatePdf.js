@@ -94,10 +94,19 @@ function drawCell(doc, cellX, cellY, cellW, cellH, day) {
   doc.text(`Tara ${day.tara.number}: ${day.tara.name}`, cellX + pad, ty)
   ty += 3.5
 
+  const hasTransitions = day.nakshatra_transitions.length > 0 || day.tithi_transitions.length > 0
+
+  // Reserve space for transitions section at the bottom
+  const transitionLines = [
+    ...day.nakshatra_transitions.map((t) => `${t.time} ${t.nakshatra_name}`),
+    ...day.tithi_transitions.map((t) => `${t.time} ${t.tithi_name} (${t.paksha})`),
+  ]
+  const transitionBlockH = hasTransitions ? 1.5 + transitionLines.length * 2.5 + 1 : 0
+  const maxY = cellY + cellH - transitionBlockH - 1.5
+
   // Activities
   doc.setFontSize(5.5)
   doc.setTextColor(30, 30, 30)
-  const maxY = cellY + cellH - 1.5
   for (const activity of day.activities) {
     if (ty >= maxY) break
     const lines = doc.splitTextToSize(`\u00B7 ${activity}`, textW)
@@ -105,6 +114,23 @@ function drawCell(doc, cellX, cellY, cellW, cellH, day) {
       if (ty >= maxY) break
       doc.text(line, cellX + pad, ty)
       ty += 2.6
+    }
+  }
+
+  // Transitions section
+  if (hasTransitions) {
+    ty = cellY + cellH - transitionBlockH
+    doc.setDrawColor(120, 120, 120)
+    doc.setLineWidth(0.15)
+    doc.line(cellX + pad, ty, cellX + cellW - pad, ty)
+    ty += 2.2
+
+    doc.setFontSize(5)
+    doc.setTextColor(50, 50, 50)
+    for (const line of transitionLines) {
+      if (ty >= cellY + cellH - 1) break
+      doc.text(line, cellX + pad, ty)
+      ty += 2.5
     }
   }
 }
