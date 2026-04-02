@@ -43,9 +43,18 @@ export default function DayDetailModal({ day, onClose }) {
         </div>
 
         <div className="px-5 pb-5 space-y-4">
+          {/* Nakshatra for the day */}
+          <div className="rounded-lg p-3 bg-indigo-50 border border-indigo-200">
+            <p className="text-xs font-semibold uppercase tracking-wider opacity-70 mb-0.5">Day's Nakshatra</p>
+            <p className="font-semibold text-sm text-indigo-900">{day.sunrise_nakshatra_name}</p>
+            <p className="text-xs mt-0.5 opacity-70">
+              Constellation: {day.constellation_type}
+            </p>
+          </div>
+
           {/* Tara detail */}
           <div className={`rounded-lg p-3 ${styles.badge} bg-opacity-40`}>
-            <p className="text-xs font-semibold uppercase tracking-wider opacity-70 mb-0.5">Active Tara</p>
+            <p className="text-xs font-semibold uppercase tracking-wider opacity-70 mb-0.5">Tara Rating (Relative to Your Birth Nakshatra)</p>
             <p className="font-semibold text-sm">Tara {day.tara.number}: {day.tara.name}</p>
             <p className="text-xs mt-0.5 opacity-80">{day.tara.meaning}</p>
           </div>
