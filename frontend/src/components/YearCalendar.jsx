@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import MonthGrid from './MonthGrid'
 import DayDetailModal from './DayDetailModal'
+import ActivitySearchButton from './ActivitySearch/ActivitySearchButton'
+import ActivitySearchModal from './ActivitySearch/ActivitySearchModal'
 import useCalendarStore from '../store/useCalendarStore'
 import { generatePdf } from '../utils/generatePdf'
 
@@ -15,6 +17,7 @@ const BUCKET_LEGEND = [
 export default function YearCalendar({ calendarData }) {
   const [selectedDay, setSelectedDay] = useState(null)
   const [downloading, setDownloading] = useState(false)
+  const [activitySearchOpen, setActivitySearchOpen] = useState(false)
   const { locationLabel } = useCalendarStore()
 
   async function handleDownloadPdf() {
@@ -49,6 +52,9 @@ export default function YearCalendar({ calendarData }) {
             ))}
           </div>
 
+          {/* Activity Search */}
+          <ActivitySearchButton onClick={() => setActivitySearchOpen(true)} />
+
           {/* Download PDF */}
           <button
             onClick={handleDownloadPdf}
@@ -78,6 +84,17 @@ export default function YearCalendar({ calendarData }) {
       </div>
 
       <DayDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} />
+
+      {activitySearchOpen && (
+        <ActivitySearchModal
+          calendarData={calendarData}
+          onClose={() => setActivitySearchOpen(false)}
+          onSelectDay={(day) => {
+            setSelectedDay(day)
+            setActivitySearchOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }
