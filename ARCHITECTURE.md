@@ -213,8 +213,9 @@ nakshatra/
 - JSON export moved to `export_json.py` (separate from backend)
 - Frontend loads static JSON instead of making API calls
 - New `timelineUtils.js` for segment-based day display
-- Calendar grid cells show nakshatra names only (no transition times)
-- PDF generation uses `tarabalam_tier` field and activities only for favorable tiers
+- **Web calendar grid:** Shows nakshatra names only (no transition times)
+- **PDF generation:** Shows nakshatra names WITH transition times, activities only for favorable tiers
+- Modal shows detailed Timeline Segments with time ranges for each transition
 
 ---
 
