@@ -30,7 +30,8 @@ export default function ActivitySearchModal({
       selectedActivity,
       calendarData,
       dateFrom,
-      dateTo
+      dateTo,
+      calendarData.nakshatra.id
     )
     setSearchResults(results)
     setResultsExpanded(false)
