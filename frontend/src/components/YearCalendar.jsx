@@ -69,7 +69,6 @@ export default function YearCalendar({ calendarData }) {
       {/* Colour key for transition text */}
       <div className="flex gap-4 mb-5 text-[11px] text-gray-500">
         <span><span className="text-indigo-700 font-medium">Indigo</span> = Nakshatra transition</span>
-        <span><span className="text-amber-700 font-medium">Amber</span> = Tithi transition</span>
       </div>
 
       {/* 12-month grid — 3 columns on xl, 2 on md, 1 on mobile */}
@@ -83,7 +82,11 @@ export default function YearCalendar({ calendarData }) {
         ))}
       </div>
 
-      <DayDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} />
+      <DayDetailModal
+        day={selectedDay}
+        birthNakshatraId={calendarData.nakshatra.id}
+        onClose={() => setSelectedDay(null)}
+      />
 
       {activitySearchOpen && (
         <ActivitySearchModal

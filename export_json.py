@@ -29,6 +29,11 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from ephemeris import compute_sunrise_jd, moon_longitude, nakshatra_index, utc_to_jd
 
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
+
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 log = logging.getLogger(__name__)
 
@@ -38,62 +43,63 @@ OUT_DIR  = ROOT_DIR / "frontend" / "public" / "data"
 
 # Canonical city list — mirrors LocationSelector.jsx exactly.
 # Key: city label (used as the JSON lookup key in the frontend).
+# tz_name: IANA timezone name (handles DST automatically)
 CITIES = [
     # India
-    {"label": "Mumbai",        "lat":  19.08, "lon":  72.88},
-    {"label": "Delhi",         "lat":  28.67, "lon":  77.22},
-    {"label": "Bangalore",     "lat":  12.97, "lon":  77.59},
-    {"label": "Chennai",       "lat":  13.08, "lon":  80.27},
-    {"label": "Hyderabad",     "lat":  17.38, "lon":  78.48},
-    {"label": "Kolkata",       "lat":  22.57, "lon":  88.37},
-    {"label": "Pune",          "lat":  18.52, "lon":  73.86},
-    {"label": "Ahmedabad",     "lat":  23.03, "lon":  72.58},
-    {"label": "Jaipur",        "lat":  26.92, "lon":  75.82},
-    {"label": "Kochi",         "lat":   9.93, "lon":  76.27},
-    {"label": "Varanasi",      "lat":  25.32, "lon":  82.97},
-    {"label": "Nagpur",        "lat":  21.15, "lon":  79.09},
+    {"label": "Mumbai",        "lat":  19.08, "lon":  72.88, "tz_name": "Asia/Kolkata"},
+    {"label": "Delhi",         "lat":  28.67, "lon":  77.22, "tz_name": "Asia/Kolkata"},
+    {"label": "Bangalore",     "lat":  12.97, "lon":  77.59, "tz_name": "Asia/Kolkata"},
+    {"label": "Chennai",       "lat":  13.08, "lon":  80.27, "tz_name": "Asia/Kolkata"},
+    {"label": "Hyderabad",     "lat":  17.38, "lon":  78.48, "tz_name": "Asia/Kolkata"},
+    {"label": "Kolkata",       "lat":  22.57, "lon":  88.37, "tz_name": "Asia/Kolkata"},
+    {"label": "Pune",          "lat":  18.52, "lon":  73.86, "tz_name": "Asia/Kolkata"},
+    {"label": "Ahmedabad",     "lat":  23.03, "lon":  72.58, "tz_name": "Asia/Kolkata"},
+    {"label": "Jaipur",        "lat":  26.92, "lon":  75.82, "tz_name": "Asia/Kolkata"},
+    {"label": "Kochi",         "lat":   9.93, "lon":  76.27, "tz_name": "Asia/Kolkata"},
+    {"label": "Varanasi",      "lat":  25.32, "lon":  82.97, "tz_name": "Asia/Kolkata"},
+    {"label": "Nagpur",        "lat":  21.15, "lon":  79.09, "tz_name": "Asia/Kolkata"},
     # South Asia
-    {"label": "Colombo",       "lat":   6.93, "lon":  79.85},
-    {"label": "Kathmandu",     "lat":  27.71, "lon":  85.31},
-    {"label": "Dhaka",         "lat":  23.72, "lon":  90.41},
+    {"label": "Colombo",       "lat":   6.93, "lon":  79.85, "tz_name": "Asia/Colombo"},
+    {"label": "Kathmandu",     "lat":  27.71, "lon":  85.31, "tz_name": "Asia/Kathmandu"},
+    {"label": "Dhaka",         "lat":  23.72, "lon":  90.41, "tz_name": "Asia/Dhaka"},
     # Middle East
-    {"label": "Dubai",         "lat":  25.20, "lon":  55.27},
-    {"label": "Abu Dhabi",     "lat":  24.45, "lon":  54.37},
-    {"label": "Muscat",        "lat":  23.59, "lon":  58.41},
-    {"label": "Kuwait City",   "lat":  29.37, "lon":  47.98},
+    {"label": "Dubai",         "lat":  25.20, "lon":  55.27, "tz_name": "Asia/Dubai"},
+    {"label": "Abu Dhabi",     "lat":  24.45, "lon":  54.37, "tz_name": "Asia/Dubai"},
+    {"label": "Muscat",        "lat":  23.59, "lon":  58.41, "tz_name": "Asia/Muscat"},
+    {"label": "Kuwait City",   "lat":  29.37, "lon":  47.98, "tz_name": "Asia/Kuwait"},
     # East Africa
-    {"label": "Nairobi",       "lat":  -1.29, "lon":  36.82},
-    {"label": "Mombasa",       "lat":  -4.05, "lon":  39.67},
+    {"label": "Nairobi",       "lat":  -1.29, "lon":  36.82, "tz_name": "Africa/Nairobi"},
+    {"label": "Mombasa",       "lat":  -4.05, "lon":  39.67, "tz_name": "Africa/Nairobi"},
     # South Africa
-    {"label": "Johannesburg",  "lat": -26.20, "lon":  28.04},
-    {"label": "Durban",        "lat": -29.86, "lon":  31.02},
+    {"label": "Johannesburg",  "lat": -26.20, "lon":  28.04, "tz_name": "Africa/Johannesburg"},
+    {"label": "Durban",        "lat": -29.86, "lon":  31.02, "tz_name": "Africa/Johannesburg"},
     # Europe
-    {"label": "London",        "lat":  51.51, "lon":  -0.13},
-    {"label": "Birmingham",    "lat":  52.48, "lon":  -1.90},
-    {"label": "Leicester",     "lat":  52.64, "lon":  -1.13},
-    {"label": "Amsterdam",     "lat":  52.37, "lon":   4.90},
-    {"label": "Frankfurt",     "lat":  50.11, "lon":   8.68},
-    {"label": "Zurich",        "lat":  47.38, "lon":   8.54},
+    {"label": "London",        "lat":  51.51, "lon":  -0.13, "tz_name": "Europe/London"},
+    {"label": "Birmingham",    "lat":  52.48, "lon":  -1.90, "tz_name": "Europe/London"},
+    {"label": "Leicester",     "lat":  52.64, "lon":  -1.13, "tz_name": "Europe/London"},
+    {"label": "Amsterdam",     "lat":  52.37, "lon":   4.90, "tz_name": "Europe/Amsterdam"},
+    {"label": "Frankfurt",     "lat":  50.11, "lon":   8.68, "tz_name": "Europe/Berlin"},
+    {"label": "Zurich",        "lat":  47.38, "lon":   8.54, "tz_name": "Europe/Zurich"},
     # North America
-    {"label": "New York",      "lat":  40.71, "lon": -74.01},
-    {"label": "Chicago",       "lat":  41.88, "lon": -87.63},
-    {"label": "Houston",       "lat":  29.76, "lon": -95.37},
-    {"label": "Dallas",        "lat":  32.78, "lon": -96.80},
-    {"label": "Los Angeles",   "lat":  34.05, "lon": -118.24},
-    {"label": "San Francisco", "lat":  37.77, "lon": -122.42},
-    {"label": "Seattle",       "lat":  47.61, "lon": -122.33},
-    {"label": "Atlanta",       "lat":  33.75, "lon":  -84.39},
-    {"label": "Toronto",       "lat":  43.65, "lon":  -79.38},
-    {"label": "Vancouver",     "lat":  49.25, "lon": -123.12},
+    {"label": "New York",      "lat":  40.71, "lon": -74.01, "tz_name": "America/New_York"},
+    {"label": "Chicago",       "lat":  41.88, "lon": -87.63, "tz_name": "America/Chicago"},
+    {"label": "Houston",       "lat":  29.76, "lon": -95.37, "tz_name": "America/Chicago"},
+    {"label": "Dallas",        "lat":  32.78, "lon": -96.80, "tz_name": "America/Chicago"},
+    {"label": "Los Angeles",   "lat":  34.05, "lon": -118.24, "tz_name": "America/Los_Angeles"},
+    {"label": "San Francisco", "lat":  37.77, "lon": -122.42, "tz_name": "America/Los_Angeles"},
+    {"label": "Seattle",       "lat":  47.61, "lon": -122.33, "tz_name": "America/Los_Angeles"},
+    {"label": "Atlanta",       "lat":  33.75, "lon":  -84.39, "tz_name": "America/New_York"},
+    {"label": "Toronto",       "lat":  43.65, "lon":  -79.38, "tz_name": "America/Toronto"},
+    {"label": "Vancouver",     "lat":  49.25, "lon": -123.12, "tz_name": "America/Vancouver"},
     # Australia & New Zealand
-    {"label": "Sydney",        "lat": -33.87, "lon":  151.21},
-    {"label": "Melbourne",     "lat": -37.81, "lon":  144.96},
-    {"label": "Brisbane",      "lat": -27.47, "lon":  153.02},
-    {"label": "Perth",         "lat": -31.95, "lon":  115.86},
-    {"label": "Auckland",      "lat": -36.87, "lon":  174.77},
+    {"label": "Sydney",        "lat": -33.87, "lon":  151.21, "tz_name": "Australia/Sydney"},
+    {"label": "Melbourne",     "lat": -37.81, "lon":  144.96, "tz_name": "Australia/Melbourne"},
+    {"label": "Brisbane",      "lat": -27.47, "lon":  153.02, "tz_name": "Australia/Brisbane"},
+    {"label": "Perth",         "lat": -31.95, "lon":  115.86, "tz_name": "Australia/Perth"},
+    {"label": "Auckland",      "lat": -36.87, "lon":  174.77, "tz_name": "Pacific/Auckland"},
     # Southeast Asia
-    {"label": "Singapore",     "lat":   1.35, "lon":  103.82},
-    {"label": "Kuala Lumpur",  "lat":   3.14, "lon":  101.69},
+    {"label": "Singapore",     "lat":   1.35, "lon":  103.82, "tz_name": "Asia/Singapore"},
+    {"label": "Kuala Lumpur",  "lat":   3.14, "lon":  101.69, "tz_name": "Asia/Kuala_Lumpur"},
 ]
 
 
@@ -124,20 +130,38 @@ def _read_transitions(year: int) -> tuple[list[dict], list[dict]]:
     return nakshatra_transitions, tithi_transitions
 
 
-def _compute_sunrise_nakshatras_for_city(year: int, lat: float, lon: float) -> dict[str, int]:
+def _compute_sunrise_nakshatras_for_city(year: int, lat: float, lon: float, tz_name: str) -> dict[str, int]:
     """
-    For every calendar day in `year`, compute the sunrise nakshatra at (lat, lon).
+    For every calendar day in `year` (in local timezone), compute the sunrise nakshatra at (lat, lon).
     Returns {"YYYY-MM-DD": nakshatra_id_1based, ...}
+
+    Fix: Compute sunrise after LOCAL midnight (not UTC midnight).
+    Uses zoneinfo to handle DST automatically.
     """
     result: dict[str, int] = {}
-    day = datetime(year, 1, 1, tzinfo=timezone.utc)
-    end = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
-    while day < end:
-        midnight_jd = utc_to_jd(day)
+
+    tz = ZoneInfo(tz_name)
+
+    # Iterate through calendar days in LOCAL timezone
+    day_local = datetime(year, 1, 1)
+    end_local = datetime(year + 1, 1, 1)
+
+    while day_local < end_local:
+        # Create a naive datetime at local midnight, then make it aware in the target timezone
+        dt_local_aware = day_local.replace(tzinfo=tz)
+
+        # Convert to UTC
+        dt_utc = dt_local_aware.astimezone(timezone.utc).replace(tzinfo=None)
+
+        # Compute sunrise from UTC midnight
+        midnight_jd = utc_to_jd(dt_utc)
         sunrise_jd  = compute_sunrise_jd(midnight_jd, lat, lon)
         nk_id       = nakshatra_index(moon_longitude(sunrise_jd)) + 1  # 1-based
-        result[day.strftime("%Y-%m-%d")] = nk_id
-        day += timedelta(days=1)
+
+        # Store result using LOCAL date string
+        result[day_local.strftime("%Y-%m-%d")] = nk_id
+        day_local += timedelta(days=1)
+
     return result
 
 
@@ -161,7 +185,7 @@ def export_year(year: int) -> None:
     t0 = time.perf_counter()
     sunrise_data: dict[str, dict[str, int]] = {}
     for i, city in enumerate(CITIES, 1):
-        city_data = _compute_sunrise_nakshatras_for_city(year, city["lat"], city["lon"])
+        city_data = _compute_sunrise_nakshatras_for_city(year, city["lat"], city["lon"], city["tz_name"])
         sunrise_data[city["label"]] = city_data
         if i % 10 == 0 or i == len(CITIES):
             elapsed = time.perf_counter() - t0

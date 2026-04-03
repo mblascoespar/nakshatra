@@ -47,13 +47,7 @@ export default function DayCell({ day, onClick }) {
 
       {day.nakshatra_transitions.map((t, i) => (
         <span key={i} className="block text-indigo-700 truncate">
-          {t.time} {abbrev(t.nakshatra_name)}
-        </span>
-      ))}
-
-      {day.tithi_transitions.map((t, i) => (
-        <span key={i} className="block text-amber-700 truncate">
-          {t.time} {abbrev(t.tithi_name)}
+          {abbrev(t.nakshatra_name)}
         </span>
       ))}
     </button>

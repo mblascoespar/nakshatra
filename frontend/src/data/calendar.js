@@ -104,10 +104,10 @@ export async function buildYearCalendar(nakshatraId, year, timezone, cityLabel) 
       const startStr = _msToUTCStr(utcStartMs)
       const endStr   = _msToUTCStr(utcEndMs)
 
+      const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`
+
       const nkToday = nkTransitions.filter((t) => t.utc >= startStr && t.utc <= endStr)
       const ttToday = ttTransitions.filter((t) => t.utc >= startStr && t.utc <= endStr)
-
-      const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`
       const sunriseNkId = cityData[dateStr] ?? 1
       const tara = taraForDay(nakshatraId, sunriseNkId)
       const sunriseNak = nakshatraById(sunriseNkId)

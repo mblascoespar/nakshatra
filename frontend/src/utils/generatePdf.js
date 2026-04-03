@@ -87,37 +87,30 @@ function drawCell(doc, cellX, cellY, cellW, cellH, day) {
   doc.text(nakLines, cellX + pad, ty)
   ty += nakLines.length * 3
 
-  // Tara line
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(6.5)
-  doc.setTextColor(40, 40, 40)
-  doc.text(`Tara ${day.tara.number}: ${day.tara.name}`, cellX + pad, ty)
-  ty += 3.5
-
-  const hasTransitions = day.nakshatra_transitions.length > 0 || day.tithi_transitions.length > 0
+  const hasTransitions = day.nakshatra_transitions.length > 0
 
   // Reserve space for transitions section at the bottom
-  const transitionLines = [
-    ...day.nakshatra_transitions.map((t) => `${t.time} ${t.nakshatra_name}`),
-    ...day.tithi_transitions.map((t) => `${t.time} ${t.tithi_name} (${t.paksha})`),
-  ]
+  const transitionLines = day.nakshatra_transitions.map((t) => t.nakshatra_name)
   const transitionBlockH = hasTransitions ? 1.5 + transitionLines.length * 2.5 + 1 : 0
   const maxY = cellY + cellH - transitionBlockH - 1.5
 
-  // Activities
-  doc.setFontSize(5.5)
-  doc.setTextColor(30, 30, 30)
-  for (const activity of day.activities) {
-    if (ty >= maxY) break
-    const lines = doc.splitTextToSize(`\u00B7 ${activity}`, textW)
-    for (const line of lines) {
+  // Activities (only for favorable tiers: very_good, good)
+  const showActivities = ['very_good', 'good'].includes(day.tarabalam_tier)
+  if (showActivities) {
+    doc.setFontSize(5.5)
+    doc.setTextColor(30, 30, 30)
+    for (const activity of day.activities) {
       if (ty >= maxY) break
-      doc.text(line, cellX + pad, ty)
-      ty += 2.6
+      const lines = doc.splitTextToSize(`\u00B7 ${activity}`, textW)
+      for (const line of lines) {
+        if (ty >= maxY) break
+        doc.text(line, cellX + pad, ty)
+        ty += 2.6
+      }
     }
   }
 
-  // Transitions section
+  // Nakshatra transitions section
   if (hasTransitions) {
     ty = cellY + cellH - transitionBlockH
     doc.setDrawColor(120, 120, 120)
@@ -126,10 +119,10 @@ function drawCell(doc, cellX, cellY, cellW, cellH, day) {
     ty += 2.2
 
     doc.setFontSize(5)
-    doc.setTextColor(50, 50, 50)
-    for (const line of transitionLines) {
+    doc.setTextColor(80, 80, 140)
+    for (const nakName of transitionLines) {
       if (ty >= cellY + cellH - 1) break
-      doc.text(line, cellX + pad, ty)
+      doc.text(nakName, cellX + pad, ty)
       ty += 2.5
     }
   }
