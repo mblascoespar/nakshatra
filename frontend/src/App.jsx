@@ -1,4 +1,6 @@
 import { useEffect } from 'react'
+import { signOut } from 'firebase/auth'
+import { auth } from './firebase'
 import { NAKSHATRAS } from './data/tarabalam'
 import { buildYearCalendar } from './data/calendar'
 import NakshatraSelector from './components/NakshatraSelector'
@@ -55,6 +57,12 @@ export default function App() {
                 <option key={y} value={y}>{y}</option>
               ))}
             </select>
+            <button
+              onClick={() => signOut(auth)}
+              className="bg-gray-700 hover:bg-gray-600 text-white text-xs rounded px-3 py-1 border border-gray-600 transition"
+            >
+              Sign out
+            </button>
           </div>
         </div>
       </header>

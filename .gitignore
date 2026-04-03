@@ -27,9 +27,10 @@ engine/
 # macOS
 .DS_Store
 
-# Env files
+# Env files (but allow .example as a template)
 *.env
-.env.*
+.env.local
+.env.*.local
 
 # PDF outputs (generated artefacts)
 *.pdf
