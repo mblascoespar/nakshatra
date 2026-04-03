@@ -13,6 +13,27 @@ const BASE = import.meta.env.BASE_URL  // respects vite base config
 // Simple in-memory cache so repeated year renders don't re-fetch
 const _cache = {}
 
+/**
+ * Find the nakshatra ID active at a given UTC instant.
+ * Binary search through nkTransitions for the last entry with utc <= utcMs.
+ */
+function _nakshatraAtUTCMs(nkTransitions, utcMs) {
+  let lo = 0, hi = nkTransitions.length - 1
+  let result = nkTransitions[0].nakshatra_id  // fallback to year-start
+
+  while (lo <= hi) {
+    const mid = (lo + hi) >>> 1
+    const entryMs = new Date(nkTransitions[mid].utc).getTime()
+    if (entryMs <= utcMs) {
+      result = nkTransitions[mid].nakshatra_id
+      lo = mid + 1
+    } else {
+      hi = mid - 1
+    }
+  }
+  return result
+}
+
 async function _loadYear(year) {
   if (_cache[year]) return _cache[year]
 
@@ -79,8 +100,7 @@ const MONTH_NAMES = ['','January','February','March','April','May','June',
 export async function buildYearCalendar(nakshatraId, year, timezone, cityLabel) {
   const { nkTransitions, ttTransitions, sunriseNakshatras } = await _loadYear(year)
 
-  const cityData = sunriseNakshatras[cityLabel]
-  if (!cityData) throw new Error(`No sunrise data for city "${cityLabel}" in year ${year}`)
+  const cityData = sunriseNakshatras[cityLabel] ?? null
 
   // Build UTC boundary strings for each local day so we can filter transitions
   // We need local-day start/end in UTC. We do this by converting the local
@@ -108,7 +128,9 @@ export async function buildYearCalendar(nakshatraId, year, timezone, cityLabel) 
 
       const nkToday = nkTransitions.filter((t) => t.utc >= startStr && t.utc <= endStr)
       const ttToday = ttTransitions.filter((t) => t.utc >= startStr && t.utc <= endStr)
-      const sunriseNkId = cityData[dateStr] ?? 1
+      const sunriseNkId = cityData
+        ? (cityData[dateStr] ?? 1)
+        : _nakshatraAtUTCMs(nkTransitions, utcStartMs)
       const tara = taraForDay(nakshatraId, sunriseNkId)
       const sunriseNak = nakshatraById(sunriseNkId)
 
