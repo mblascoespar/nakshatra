@@ -90,7 +90,7 @@ function drawCell(doc, cellX, cellY, cellW, cellH, day) {
   const hasTransitions = day.nakshatra_transitions.length > 0
 
   // Reserve space for transitions section at the bottom
-  const transitionLines = day.nakshatra_transitions.map((t) => t.nakshatra_name)
+  const transitionLines = day.nakshatra_transitions.map((t) => `${t.nakshatra_name} \u2014 ${t.time}`)
   const transitionBlockH = hasTransitions ? 1.5 + transitionLines.length * 2.5 + 1 : 0
   const maxY = cellY + cellH - transitionBlockH - 1.5
 

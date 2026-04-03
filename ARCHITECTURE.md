@@ -61,13 +61,15 @@ The system is split into two independent processes: a Python backend that handle
 
 ---
 
-### 3. Sunrise-Based Day Classification
+### 3. Day-Start-Based Day Classification
 
-**Decision:** The Tarabalam tier for a day is determined by the Nakshatra the Moon occupies at the moment of sunrise at the client's location — not at UTC midnight or local midnight.
+**Decision:** The Tarabalam tier for a day is determined by the Nakshatra active at the **start of the local calendar day** (local midnight), not at sunrise.
 
-**Why:** This is the correct Vedic method (Chandra Tara). The Nakshatra at sunrise is the one that "rules" the day in Jyotish convention. Using midnight would produce incorrect results for days where the Moon transitions between midnight and sunrise.
+**Why:** Tarabalam is applied to the entire day, and the frontend Timeline Segments feature shows all nakshatra transitions throughout that day starting from midnight. To avoid spurious self-transitions (e.g., showing "Shravana → Shravana" at the start of a day), the stored nakshatra must match the nakshatra at the start of the local day, not at sunrise. 
 
-**Implementation:** `compute_sunrise_jd` calls `swe.rise_trans` for each day. The Nakshatra at that JD is then used for Tarabalam assignment. This is computed fresh each time, which is correct — sunrise depends on latitude/longitude, so it cannot be shared across users.
+**Implementation:** For each location and date, we compute the Nakshatra active at local midnight (converted to UTC) using the Moon's longitude at that moment. This is stored in `sunrise_nakshatras_{year}.json` and used for Tarabalam assignment. IANA timezone names with `zoneinfo` ensure correct DST handling across all regions.
+
+**Prior approach:** Earlier versions computed the Nakshatra at sunrise time, which led to mismatches where the first timeline segment showed a different nakshatra than expected (e.g., Mumbai March 15 sunrise = nakshatra 22, but local day starts with nakshatra 21).
 
 ---
 
@@ -88,13 +90,6 @@ very_bad   →  red           →  Naidhana (7)
 
 ---
 
-### 5. Day-Start Nakshatra vs. Sunrise Nakshatra
-
-**Decision:** `DayData` exposes two distinct Nakshatra references: `day_start_nakshatra_id` (Nakshatra active at local midnight) and `sunrise_nakshatra_id` (Nakshatra at sunrise, which drives Tarabalam).
-
-**Why:** Tarabalam uses sunrise. But the PDF "Timings" section shows complete Nakshatra spans that cross midnight boundaries — e.g., "Pushya — Jan 31 04:04 PM – Feb 01 02:27 PM". To reconstruct this continuous timeline, the frontend needs to know what Nakshatra was active at the start of each day (midnight), not just at sunrise. Without `day_start_nakshatra_id`, days where a transition occurs between midnight and sunrise would have a gap in the displayed timeline.
-
----
 
 ### 6. Activity Guidance as Full Text, Per Nakshatra
 
@@ -144,30 +139,29 @@ very_bad   →  red           →  Naidhana (7)
 User selects: Nakshatra + Location + Year
        │
        ▼
-Frontend → GET /api/calendar/year?nakshatra=17&lat=...&lon=...&tz=...&year=2026
-       │
-       ▼
-Backend:
-  1. Validate year has pre-computed data (db file exists)
-  2. Load all Nakshatra transitions for the year from SQLite
-  3. Load all Tithi transitions for the year from SQLite
-  4. For each of 365 days:
-       a. Compute sunrise JD at (lat, lon)           ← live ephemeris
-       b. Compute Nakshatra at sunrise                ← Tarabalam classification
-       c. Compute Nakshatra at local midnight         ← for PDF timings
-       d. Compute Tithi at sunrise                    ← for paksha / moon phase
-       e. Derive Tara (tier, name, meaning)
-       f. Derive activity guidance (from Nakshatra type)
-       g. Slice Nakshatra and Tithi transitions for that day's window
-  5. Return YearCalendarResponse (12 months × N days)
+Frontend loads static JSON files:
+  1. frontend/public/data/nakshatra_transitions_{year}.json
+     (361 transitions per year in UTC)
+  2. frontend/public/data/tithi_transitions_{year}.json
+     (371 transitions per year in UTC)
+  3. frontend/public/data/sunrise_nakshatras_{year}.json
+     (nakshatra at local midnight for each date per location)
        │
        ▼
 Frontend:
-  - Stores response in Zustand
-  - Renders MonthGrid (color-coded day cells)
-  - On day click: renders DayDetailModal from store data
-  - On PDF export: generates full-year PDF in browser from store data
+  1. For each location/date combination:
+       a. Load pre-computed nakshatra from sunrise_nakshatras_{year}.json
+       b. Compute Tara (tier, name, meaning) relative to birth nakshatra
+       c. Filter transitions by local day window (using IANA timezone)
+       d. Convert transition times to local time
+       e. Build TimelineSegments for display
+  2. Stores all data in Zustand
+  3. Renders MonthGrid (color-coded day cells)
+  4. On day click: renders DayDetailModal with TimelineSegments
+  5. On PDF export: generates full-year PDF in browser (activities only for favorable tiers)
 ```
+
+**Key Change:** All computation is now client-side. The backend (`precompute.py` and `export_json.py`) runs once per year to generate the JSON files, then publishes them as static assets. The frontend handles all rendering, day-window filtering, timezone conversion, and PDF generation.
 
 ---
 
@@ -236,6 +230,45 @@ The following changes are required to align the backend with the v4 PRD. They ar
 ---
 
 ## Frontend Features Implemented (v5)
+
+### Timeline Segments
+
+**Purpose:** Display nakshatra transitions throughout a day in an intuitive segment-based view.
+
+**Components:**
+- `TimelineSegments.jsx` — Main container
+- `TimelineSegment.jsx` — Individual segment display with time range, nakshatra, tara tier, and activities
+- `frontend/src/utils/timelineUtils.js` — `buildTimelineSegments()` logic
+
+**Key Logic:**
+```javascript
+buildTimelineSegments(day, birthNakshatraId)
+  1. If no transitions: return single segment for entire day (00:00-23:59)
+  2. Else build segments:
+     - Before first transition: sunrise_nakshatra from 00:00 to first transition time
+     - Between transitions: for each pair, nakshatra N from t[i] to t[i+1]
+     - After last transition: nakshatra M from last transition to 23:59
+  3. For each segment: compute Tara tier and activities
+```
+
+**Display Rules:**
+- Each segment shows: time range, nakshatra name, tara quality tier, and activities
+- Activities displayed only for favorable tiers: `very_good` and `good`
+- Poor/very_bad tiers show "⚠️ Avoid any activity" warning
+- No redundant information (removed daily tara summary, removed auspicious activities list)
+
+**Integration:**
+- Replaces the old day detail layout (which showed redundant tara info and auspicious activities separately)
+- Appears in `DayDetailModal` when user clicks a calendar day
+- Modal scrolls vertically when many segments cause overflow
+
+**Files:**
+- `frontend/src/components/TimelineSegment.jsx`
+- `frontend/src/components/TimelineSegments.jsx`
+- `frontend/src/utils/timelineUtils.js`
+- Integrated into `DayDetailModal.jsx`
+
+---
 
 ### Activity Search Modal
 
