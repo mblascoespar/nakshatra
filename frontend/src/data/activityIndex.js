@@ -166,20 +166,20 @@ export const ACTIVITIES_SEARCHABLE = ACTIVITIES.map((activity) => ({
  * Groups activities by semantic category for dropdown menus.
  */
 export const ACTIVITY_CATEGORIES = {
-  "Business & Commerce": [40, 47, 48, 54, 60], // Sales, Starting business, Starting industries, Trade, Loans
-  "Life Events": [26, 38], // Marriage, Relationships
-  "Property & Real Estate": [5, 6, 20, 35], // Building, Buying home, Laying foundations, Real estate
-  "Professional Work": [7, 34, 39, 11], // Careers, Professional responsibilities, Routine duties, Day-to-day works
-  "Creative Arts": [1, 9, 10, 28, 37], // Art, Creativity, Dance, Music, Research
-  "Spiritual & Ritual": [8, 13, 15, 21, 22, 23, 45, 49, 51, 56], // Ceremonies, Deity, Education, Learning astrology, Learning dance, Learning music, Spiritual, Studying medicine, Tantric, Vedas
-  "Health & Medicine": [27, 50, 16, 36, 41], // Medical, Surgery, Emotional healing, Release emotions, Self-development
-  "Travel & Transport": [55, 57], // Travel, Vehicles
-  "Agriculture & Nature": [18, 44], // Gardening, Sowing
-  "Recreation & Leisure": [25, 32, 43, 46], // Luxury, Pleasure, Sex, Sports
-  "Social & Gatherings": [33], // Procession
-  "Conflict & Transformation": [2, 4, 12, 14, 17, 19, 31, 42, 51, 52, 53, 58], // Arson, Breaking alliances, Deceit, Destruction, Evil schemes, Invocation of spirits, Planting ghosts, Separations, Tantric, Terminate employee, Terminate relationship, War
-  "Goals & Planning": [24, 30], // Long-term goals, Permanent things
-  "Legal": [59], // Will
+  "Business": [40, 47, 48, 54, 60],
+  "Life Events": [26, 38],
+  "Property": [5, 6, 20, 35],
+  "Work": [7, 34, 39, 11],
+  "Creative": [1, 9, 10, 28, 37],
+  "Spiritual": [8, 13, 15, 21, 22, 23, 45, 49, 51, 56],
+  "Health": [27, 50, 16, 36, 41],
+  "Travel": [55, 57],
+  "Agriculture": [18, 44],
+  "Leisure": [25, 32, 43, 46],
+  "Social": [33],
+  "Conflict": [2, 4, 12, 14, 17, 19, 31, 42, 51, 52, 53, 58],
+  "Goals": [24, 30],
+  "Legal": [59],
 };
 
 /**

@@ -1,4 +1,13 @@
-import { getNakshatrasForActivity } from '../data/activityIndex'
+import { getNakshatrasForActivity, ACTIVITIES } from '../data/activityIndex'
+
+/**
+ * Get activities by their IDs
+ * @param {number[]} activityIds - Array of activity IDs
+ * @returns {Array} Activities matching the IDs
+ */
+export function getActivitiesByIds(activityIds) {
+  return activityIds.map((id) => ACTIVITIES.find((a) => a.id === id)).filter(Boolean)
+}
 
 /**
  * Search calendar for auspicious days to perform an activity.
@@ -47,8 +56,10 @@ export function performActivitySearch(
       const tierDiff = tierOrder[a.tarabalam_tier] - tierOrder[b.tarabalam_tier]
       if (tierDiff !== 0) return tierDiff
 
-      // Then by date (earliest first)
-      return new Date(a.date) - new Date(b.date)
+      // Then by date (earliest first) - compare as dates properly
+      const dateA = new Date(a.date).getTime()
+      const dateB = new Date(b.date).getTime()
+      return dateA - dateB
     })
 
   return results

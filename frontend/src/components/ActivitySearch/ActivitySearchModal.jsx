@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import ActivitySearchInput from './ActivitySearchInput'
 import CategoryFilter from './CategoryFilter'
 import DateRangePicker from './DateRangePicker'
 import ResultsList from './ResultsList'
-import { performActivitySearch } from '../../utils/activitySearchUtils'
+import { performActivitySearch, getActivitiesByIds } from '../../utils/activitySearchUtils'
+import { ACTIVITY_CATEGORIES } from '../../data/activityIndex'
 
 export default function ActivitySearchModal({
   calendarData,
@@ -63,6 +64,13 @@ export default function ActivitySearchModal({
     setResultsExpanded(false)
   }
 
+  // Get activities in the selected category
+  const activitiesInCategory = useMemo(() => {
+    if (!selectedCategory) return []
+    const categoryActivityIds = ACTIVITY_CATEGORIES[selectedCategory]
+    return getActivitiesByIds(categoryActivityIds)
+  }, [selectedCategory])
+
   return (
     <div
       className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
@@ -106,6 +114,30 @@ export default function ActivitySearchModal({
             selectedCategory={selectedCategory}
             onSelect={handleCategorySelect}
           />
+
+          {/* Activities in Selected Category */}
+          {selectedCategory && activitiesInCategory.length > 0 && (
+            <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+              <p className="text-sm font-semibold text-gray-700 mb-3">
+                Activities in "{selectedCategory}":
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {activitiesInCategory.map((activity) => (
+                  <button
+                    key={activity.id}
+                    onClick={() => handleActivitySelect(activity)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                      selectedActivity?.id === activity.id
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100'
+                    }`}
+                  >
+                    {activity.displayText}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Date Range */}
           <DateRangePicker
