@@ -36,3 +36,10 @@ engine/
 
 # uv lock (committed if you want reproducible installs, excluded here for flexibility)
 # uv.lock
+
+# Temporary AI-generated design docs and implementation guides
+docs/
+IMPLEMENTATION_*.md
+REQUIREMENTS_SUMMARY.md
+UPDATE_SUMMARY.md
+NAKSHATRA_TARA_MAPPING.md
