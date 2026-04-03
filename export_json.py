@@ -132,11 +132,14 @@ def _read_transitions(year: int) -> tuple[list[dict], list[dict]]:
 
 def _compute_sunrise_nakshatras_for_city(year: int, lat: float, lon: float, tz_name: str) -> dict[str, int]:
     """
-    For every calendar day in `year` (in local timezone), compute the sunrise nakshatra at (lat, lon).
+    For every calendar day in `year` (in local timezone), compute the nakshatra active at the
+    START of that day (local midnight).
+
     Returns {"YYYY-MM-DD": nakshatra_id_1based, ...}
 
-    Fix: Compute sunrise after LOCAL midnight (not UTC midnight).
-    Uses zoneinfo to handle DST automatically.
+    The name "sunrise_nakshatras" is historical but misleading - we actually compute the nakshatra
+    at the START of the local calendar day, not at sunrise time. This ensures the first timeline
+    segment matches what's stored here.
     """
     result: dict[str, int] = {}
 
@@ -147,16 +150,15 @@ def _compute_sunrise_nakshatras_for_city(year: int, lat: float, lon: float, tz_n
     end_local = datetime(year + 1, 1, 1)
 
     while day_local < end_local:
-        # Create a naive datetime at local midnight, then make it aware in the target timezone
+        # Create a datetime at local midnight, then make it aware in the target timezone
         dt_local_aware = day_local.replace(tzinfo=tz)
 
-        # Convert to UTC
+        # Convert to UTC - this tells us what UTC time corresponds to local midnight
         dt_utc = dt_local_aware.astimezone(timezone.utc).replace(tzinfo=None)
 
-        # Compute sunrise from UTC midnight
+        # Compute the nakshatra at the START of the local day (at UTC midnight equivalent)
         midnight_jd = utc_to_jd(dt_utc)
-        sunrise_jd  = compute_sunrise_jd(midnight_jd, lat, lon)
-        nk_id       = nakshatra_index(moon_longitude(sunrise_jd)) + 1  # 1-based
+        nk_id = nakshatra_index(moon_longitude(midnight_jd)) + 1  # 1-based
 
         # Store result using LOCAL date string
         result[day_local.strftime("%Y-%m-%d")] = nk_id
