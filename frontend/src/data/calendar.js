@@ -8,6 +8,26 @@
 
 import { nakshatraById, taraForDay, tithiInfo } from './tarabalam.js'
 
+// Swayam-siddha muhurta: the 4 self-auspicious days that need no further muhurta.
+// Detection uses Gregorian month×day ranges to identify the correct Hindu month.
+const SPECIAL_DAYS_DEF = [
+  { name: 'Yugadi',          tithiIdx: 0, minMD:  310, maxMD:  420 }, // Chaitra Shukla Pratipada
+  { name: 'Akshaya Tritiya', tithiIdx: 2, minMD:  420, maxMD:  520 }, // Vaishakha Shukla Tritiya
+  { name: 'Vijaya Dashami',  tithiIdx: 9, minMD:  920, maxMD: 1024 }, // Ashvina Shukla Dashami
+  { name: 'Balipratipada',   tithiIdx: 0, minMD: 1024, maxMD: 1120 }, // Kartika Shukla Pratipada
+]
+
+function detectSpecialDay(month, dayNum, tithiAtStart, ttToday) {
+  const md = month * 100 + dayNum
+  for (const def of SPECIAL_DAYS_DEF) {
+    if (md >= def.minMD && md <= def.maxMD) {
+      if (tithiAtStart === def.tithiIdx || ttToday.some((t) => t.tithi_index === def.tithiIdx))
+        return def.name
+    }
+  }
+  return null
+}
+
 const BASE = import.meta.env.BASE_URL  // respects vite base config
 
 // Simple in-memory cache so repeated year renders don't re-fetch
@@ -131,23 +151,61 @@ export async function buildYearCalendar(nakshatraId, year, timezone, cityLabel) 
       const sunriseNkId = cityData
         ? (cityData[dateStr] ?? 1)
         : _nakshatraAtUTCMs(nkTransitions, utcStartMs)
+
+      // Tithi active at the start of this local day (scan backwards for the last
+      // transition that occurred before midnight).
+      let tithiAtDayStart = ttTransitions[0]?.tithi_index ?? 0
+      for (let i = ttTransitions.length - 1; i >= 0; i--) {
+        if (ttTransitions[i].utc < startStr) {
+          tithiAtDayStart = ttTransitions[i].tithi_index
+          break
+        }
+      }
+
+      const is_purnima  = tithiAtDayStart === 14 || ttToday.some((t) => t.tithi_index === 14)
+      const is_amavasya = tithiAtDayStart === 29 || ttToday.some((t) => t.tithi_index === 29)
+      const special_day_name = detectSpecialDay(month, dayNum, tithiAtDayStart, ttToday)
       const tara = taraForDay(nakshatraId, sunriseNkId)
       const sunriseNak = nakshatraById(sunriseNkId)
+
+      // Nakshatra active at local midnight (may differ from sunrise nakshatra when a
+      // transition occurs between midnight and sunrise).
+      let nkAtMidnight = sunriseNkId
+      for (let i = nkTransitions.length - 1; i >= 0; i--) {
+        if (nkTransitions[i].utc < startStr) { nkAtMidnight = nkTransitions[i].nakshatra_id; break }
+      }
+      const midnightTara = taraForDay(nakshatraId, nkAtMidnight)
 
       days.push({
         date: dateStr,
         day_of_week: _dayOfWeek(year, month, dayNum),
         tarabalam_tier: tara.tier,
+        midnight_tarabalam_tier: midnightTara.tier,
         tara: { number: tara.number, name: tara.name, tier: tara.tier, meaning: tara.meaning },
         sunrise_nakshatra_id: sunriseNkId,
         sunrise_nakshatra_name: sunriseNak.name,
         constellation_type: sunriseNak.constellation_type,
-        activities: sunriseNak.activities,
-        nakshatra_transitions: nkToday.map((t) => ({
-          time: _utcToLocalTime(t.utc, timezone),
-          nakshatra_id: t.nakshatra_id,
-          nakshatra_name: nakshatraById(t.nakshatra_id).name,
-        })),
+        activities: tara.tier === 'mixed'
+          ? [
+              'Meditation & spiritual practice',
+              'Self-care & personal health routines',
+              'Family gatherings & personal rituals',
+              'Study, reflection & introspection',
+              ...sunriseNak.activities,
+            ]
+          : sunriseNak.activities,
+        is_purnima,
+        is_amavasya,
+        special_day_name,
+        nakshatra_transitions: nkToday.map((t) => {
+          const nextTara = taraForDay(nakshatraId, t.nakshatra_id)
+          return {
+            time: _utcToLocalTime(t.utc, timezone),
+            nakshatra_id: t.nakshatra_id,
+            nakshatra_name: nakshatraById(t.nakshatra_id).name,
+            tier: nextTara.tier,
+          }
+        }),
         tithi_transitions: ttToday.map((t) => {
           const info = tithiInfo(t.tithi_index)
           return { time: _utcToLocalTime(t.utc, timezone), tithi_number: info.number, tithi_name: info.name, paksha: info.paksha }
