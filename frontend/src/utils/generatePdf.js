@@ -104,18 +104,12 @@ function drawCell(doc, cellX, cellY, cellW, cellH, day) {
     segments.push({ rawFrac: (h * 60 + m) / 1440, tier: t.tier })
   }
 
-  // Raw sizes derived from wall-clock fractions
-  const rawFracs = segments.map((s, i) => {
+  // Sizes derived from wall-clock fractions — drawn proportionally to the full day
+  const sizes = segments.map((s, i) => {
     const start = s.rawFrac ?? 0
     const end   = i + 1 < segments.length ? (segments[i + 1].rawFrac ?? 1) : 1
     return Math.max(0, end - start)
   })
-
-  // Enforce a minimum visible band of 8% so tiny slivers are still legible
-  const MIN_BAND = 0.08
-  const bumped = rawFracs.map((f) => Math.max(f, MIN_BAND))
-  const total  = bumped.reduce((a, b) => a + b, 0)
-  const sizes  = bumped.map((f) => f / total)
 
   let curY = cellY
   for (let i = 0; i < segments.length; i++) {
@@ -191,11 +185,10 @@ function drawCell(doc, cellX, cellY, cellW, cellH, day) {
   doc.text(`Tara ${day.tara.number}: ${day.tara.name}`, cellX + pad, ty)
   ty += 3.2
 
-  const hasTransitions = day.nakshatra_transitions.length > 0 || day.tithi_transitions.length > 0
-  const transitionLines = [
-    ...day.nakshatra_transitions.map((t) => `${t.time} ${t.nakshatra_name} [${TIER_SHORT[t.tier]}]`),
-    ...day.tithi_transitions.map((t) => `${t.time} ${t.tithi_name} (${t.paksha})`),
-  ]
+  const hasTransitions = day.nakshatra_transitions.length > 0
+  const transitionLines = day.nakshatra_transitions.map(
+    (t) => `${t.time} ${t.nakshatra_name} [${TIER_SHORT[t.tier]}]`
+  )
   const transitionBlockH = hasTransitions ? 1.5 + transitionLines.length * 2.5 + 1 : 0
   const maxY = cellY + cellH - transitionBlockH - 1.5
 
