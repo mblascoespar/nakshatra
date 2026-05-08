@@ -19,7 +19,7 @@ const TIER_LABELS = {
   good:      'Good',
   mixed:     'Mixed',
   poor:      'Poor',
-  very_bad:  'Very Bad',
+  very_bad:  'Unsupportive',
 }
 
 const TIER_SHORT = {

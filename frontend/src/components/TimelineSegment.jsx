@@ -21,7 +21,7 @@ const TIER_LABELS = {
   good:      'Good',
   mixed:     'Mixed',
   poor:      'Poor',
-  very_bad:  'Very Bad',
+  very_bad:  'Unsupportive',
 }
 
 export default function TimelineSegment({ segment, activities }) {
@@ -51,7 +51,7 @@ export default function TimelineSegment({ segment, activities }) {
       {(tier === 'very_bad' || tier === 'poor') ? (
         <div className="mt-3 pt-3 border-t border-current border-opacity-20">
           <p className="text-sm font-semibold text-red-700">
-            ⚠️ Avoid any activity
+            Undesirable
           </p>
         </div>
       ) : tier === 'mixed' ? (

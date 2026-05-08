@@ -11,7 +11,7 @@ const BUCKET_LEGEND = [
   { bucket: 'good',      label: 'Good',      color: 'bg-green-100 border-green-300' },
   { bucket: 'mixed',     label: 'Mixed',     color: 'bg-yellow-100 border-yellow-300' },
   { bucket: 'poor',      label: 'Poor',      color: 'bg-pink-100 border-pink-300' },
-  { bucket: 'very_bad',  label: 'Very Bad',  color: 'bg-red-400 border-red-500' },
+  { bucket: 'very_bad',  label: 'Unsupportive',  color: 'bg-red-400 border-red-500' },
 ]
 
 export default function YearCalendar({ calendarData }) {
