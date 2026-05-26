@@ -66,9 +66,21 @@ export default function YearCalendar({ calendarData }) {
         </div>
       </div>
 
-      {/* Colour key for transition text */}
-      <div className="flex gap-4 mb-5 text-[11px] text-gray-500">
+      {/* Colour key */}
+      <div className="flex flex-wrap gap-4 mb-5 text-[11px] text-gray-500 items-center">
         <span><span className="text-indigo-700 font-medium">Indigo</span> = Nakshatra transition</span>
+        <span className="inline-flex items-center gap-1">
+          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ background: 'rgb(200,90,0)', color: 'rgb(255,240,180)' }}>Yugadi</span>
+          = Self-auspicious day
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ background: 'rgb(210,215,230)', color: 'rgb(20,20,40)' }}>Purnima</span>
+          = Full Moon
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ background: 'rgb(35,35,55)', color: 'rgb(190,195,215)' }}>Amavasya</span>
+          = New Moon
+        </span>
       </div>
 
       {/* 12-month grid — 3 columns on xl, 2 on md, 1 on mobile */}

@@ -8,6 +8,40 @@ const TIER_LABELS = {
   good: '✓ Good',
 }
 
+const TIER_EXPORT_LABELS = {
+  very_good: 'Very Good',
+  good: 'Good',
+}
+
+function exportToCsv(results, activity) {
+  const rows = [
+    ['Date', 'Weekday', 'Tier', 'Nakshatra', 'Tara Number', 'Tara Name'],
+    ...results.map((day) => {
+      const d = new Date(day.date)
+      return [
+        d.toLocaleDateString('en-CA'),
+        d.toLocaleDateString('en-US', { weekday: 'long' }),
+        TIER_EXPORT_LABELS[day.tarabalam_tier] ?? day.tarabalam_tier,
+        day.sunrise_nakshatra_name,
+        day.tara.number,
+        day.tara.name,
+      ]
+    }),
+  ]
+
+  const csv = rows
+    .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${activity.displayText.toLowerCase().replace(/\s+/g, '-')}-auspicious-dates.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function ResultsList({
   results,
   activity,
@@ -35,9 +69,17 @@ export default function ResultsList({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-semibold text-gray-700">
-        Results: "{activity.displayText}" ({results.length} auspicious days found)
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-gray-700">
+          Results: "{activity.displayText}" ({results.length} auspicious days found)
+        </p>
+        <button
+          onClick={() => exportToCsv(results, activity)}
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-indigo-700 border border-indigo-300 rounded-lg hover:bg-indigo-50 transition"
+        >
+          ↓ Export CSV
+        </button>
+      </div>
 
       <div className="space-y-2 max-h-64 overflow-y-auto">
         {displayedResults.map((day) => {

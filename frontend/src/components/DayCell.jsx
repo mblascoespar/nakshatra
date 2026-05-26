@@ -76,18 +76,37 @@ export default function DayCell({ day, onClick }) {
       onClick={() => onClick(day)}
       style={{ background: buildBackground(day) }}
       className={`
-        w-full min-h-[4.5rem] text-left p-1 rounded border text-[10px] leading-tight
-        cursor-pointer hover:brightness-95 transition-[filter] ${border}
+        w-full min-h-[4.5rem] text-left rounded border text-[10px] leading-tight
+        overflow-hidden cursor-pointer hover:brightness-95 transition-[filter] ${border}
       `}
     >
-      <span className={`block font-bold text-xs mb-0.5 ${numColor}`}>{dayNum}</span>
-      <span className="block font-semibold truncate">{abbrev(day.sunrise_nakshatra_name)}</span>
-
-      {day.nakshatra_transitions.map((t, i) => (
-        <span key={i} className="block text-indigo-700 truncate">
-          {abbrev(t.nakshatra_name)}
-        </span>
-      ))}
+      {day.special_day_name && (
+        <div className="w-full text-center text-[8px] font-bold py-0.5 px-1 truncate"
+          style={{ background: 'rgb(200,90,0)', color: 'rgb(255,240,180)' }}>
+          {day.special_day_name}
+        </div>
+      )}
+      {day.is_purnima && (
+        <div className="w-full text-center text-[8px] font-bold py-0.5"
+          style={{ background: 'rgb(210,215,230)', color: 'rgb(20,20,40)' }}>
+          Purnima
+        </div>
+      )}
+      {day.is_amavasya && (
+        <div className="w-full text-center text-[8px] font-bold py-0.5"
+          style={{ background: 'rgb(35,35,55)', color: 'rgb(190,195,215)' }}>
+          Amavasya
+        </div>
+      )}
+      <div className="p-1">
+        <span className={`block font-bold text-xs mb-0.5 ${numColor}`}>{dayNum}</span>
+        <span className="block font-semibold truncate">{abbrev(day.sunrise_nakshatra_name)}</span>
+        {day.nakshatra_transitions.map((t, i) => (
+          <span key={i} className="block text-indigo-700 truncate">
+            {abbrev(t.nakshatra_name)}
+          </span>
+        ))}
+      </div>
     </button>
   )
 }

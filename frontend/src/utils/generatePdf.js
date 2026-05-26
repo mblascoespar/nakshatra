@@ -120,15 +120,21 @@ function drawCell(doc, cellX, cellY, cellW, cellH, day) {
     curY += segH
   }
 
-  // ── Special day stripe ───────────────────────────────────
+  // ── Header stripes (special day / moon phase) ────────────
   const STRIPE_H = 3.5
-  if (day.special_day_name) {
-    doc.setFillColor(200, 90, 0)
-    doc.rect(cellX, cellY, cellW, STRIPE_H, 'F')
+  const stripes = []
+  if (day.special_day_name) stripes.push({ label: day.special_day_name, bg: [200,  90,   0], fg: [255, 240, 180] })
+  if (day.is_purnima)       stripes.push({ label: 'Purnima',            bg: [210, 215, 230], fg: [20,  20,  40]  })
+  if (day.is_amavasya)      stripes.push({ label: 'Amavasya',           bg: [35,  35,  55],  fg: [190, 195, 215] })
+  for (let si = 0; si < stripes.length; si++) {
+    const { label, bg, fg } = stripes[si]
+    const sy = cellY + si * STRIPE_H
+    doc.setFillColor(...bg)
+    doc.rect(cellX, sy, cellW, STRIPE_H, 'F')
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(4.5)
-    doc.setTextColor(255, 240, 180)
-    doc.text(day.special_day_name, cellX + cellW / 2, cellY + 2.4, { align: 'center' })
+    doc.setTextColor(...fg)
+    doc.text(label, cellX + cellW / 2, sy + 2.4, { align: 'center' })
   }
 
   // ── Cell border ──────────────────────────────────────────
@@ -138,7 +144,7 @@ function drawCell(doc, cellX, cellY, cellW, cellH, day) {
 
   const pad   = 1.8
   const textW = cellW - 2 * pad
-  const stripeOffset = day.special_day_name ? STRIPE_H : 0
+  const stripeOffset = stripes.length * STRIPE_H
   let ty = cellY + stripeOffset + pad
 
   // ── Day number (top-right) ───────────────────────────────
@@ -148,20 +154,6 @@ function drawCell(doc, cellX, cellY, cellW, cellH, day) {
   doc.setTextColor(20, 20, 20)
   ty += 3.5
   doc.text(String(dayNum), cellX + cellW - pad, ty, { align: 'right' })
-
-  // ── Moon phase (top-left) ────────────────────────────────
-  if (day.is_purnima || day.is_amavasya) {
-    const mx = cellX + pad + 1.8
-    const my = ty - 1.5
-    const mr = 1.8
-    if (day.is_purnima) {
-      doc.setFillColor(255, 255, 255); doc.setDrawColor(70, 70, 70); doc.setLineWidth(0.4)
-      doc.ellipse(mx, my, mr, mr, 'FD')
-    } else {
-      doc.setFillColor(30, 30, 30); doc.setDrawColor(30, 30, 30)
-      doc.ellipse(mx, my, mr, mr, 'F')
-    }
-  }
   ty += 2
 
   // Thin rule under day number
@@ -447,8 +439,8 @@ function drawIntroPage(doc, nakshatra, year) {
     ['Background colour',  'Auspiciousness tier of the sunrise Nakshatra'],
     ['Split background',   'Nakshatra transitions — each band shows the tier for that period'],
     ['Number (top-right)', 'Calendar day of the month'],
-    ['White circle',       'Purnima — Full Moon'],
-    ['Black circle',       'Amavasya — New Moon (dark fortnight)'],
+    ['Silver stripe',      'Purnima — Full Moon'],
+    ['Dark stripe',        'Amavasya — New Moon (dark fortnight)'],
     ['Saffron stripe',     'Self-auspicious day (Swayam-siddha) — universally auspicious'],
     ['Nakshatra name',     'Lunar mansion active at sunrise — sets the day\'s Tara'],
     ['Tara N: Name',       'Your personal Tara based on your birth Nakshatra'],
@@ -601,19 +593,18 @@ function drawCalendarPage(doc, monthData, nakshatra, locationLabel, timezone, mo
     })
     y += LEGEND_H + 1.5
 
-    const moonR = 1.5
     const iconY = y + 2.5
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(6)
     doc.setTextColor(40, 40, 40)
 
-    doc.setFillColor(255, 255, 255); doc.setDrawColor(70, 70, 70); doc.setLineWidth(0.3)
-    doc.ellipse(MARGIN + 2, iconY, moonR, moonR, 'FD')
-    doc.text('Purnima (Full Moon)', MARGIN + 5.5, iconY + 0.6)
+    doc.setFillColor(210, 215, 230); doc.setDrawColor(100, 100, 120); doc.setLineWidth(0.3)
+    doc.roundedRect(MARGIN, iconY - 2, 7, 3.5, 0.5, 0.5, 'FD')
+    doc.text('Purnima (Full Moon)', MARGIN + 9, iconY + 0.6)
 
-    doc.setFillColor(30, 30, 30)
-    doc.ellipse(MARGIN + 52, iconY, moonR, moonR, 'F')
-    doc.text('Amavasya (New Moon)', MARGIN + 55.5, iconY + 0.6)
+    doc.setFillColor(35, 35, 55); doc.setDrawColor(35, 35, 55)
+    doc.roundedRect(MARGIN + 52, iconY - 2, 7, 3.5, 0.5, 0.5, 'F')
+    doc.text('Amavasya (New Moon)', MARGIN + 61, iconY + 0.6)
 
     doc.setFillColor(200, 90, 0)
     doc.roundedRect(MARGIN + 104, iconY - 2, 7, 3.5, 0.5, 0.5, 'F')
