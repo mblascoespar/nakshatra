@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import MonthGrid from './MonthGrid'
 import DayDetailModal from './DayDetailModal'
 import ActivitySearchButton from './ActivitySearch/ActivitySearchButton'
@@ -19,6 +19,14 @@ export default function YearCalendar({ calendarData }) {
   const [downloading, setDownloading] = useState(false)
   const [activitySearchOpen, setActivitySearchOpen] = useState(false)
   const { locationLabel } = useCalendarStore()
+  const currentMonthRef = useRef(null)
+
+  useEffect(() => {
+    const now = new Date()
+    if (calendarData.year === now.getFullYear() && currentMonthRef.current) {
+      currentMonthRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [calendarData.year])
 
   async function handleDownloadPdf() {
     setDownloading(true)
@@ -86,11 +94,15 @@ export default function YearCalendar({ calendarData }) {
       {/* 12-month grid — 3 columns on xl, 2 on md, 1 on mobile */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {calendarData.months.map((month) => (
-          <MonthGrid
+          <div
             key={month.month}
-            monthData={month}
-            onDayClick={setSelectedDay}
-          />
+            ref={month.month === new Date().getMonth() + 1 ? currentMonthRef : null}
+          >
+            <MonthGrid
+              monthData={month}
+              onDayClick={setSelectedDay}
+            />
+          </div>
         ))}
       </div>
 
