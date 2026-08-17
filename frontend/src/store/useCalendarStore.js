@@ -10,9 +10,9 @@ const useCalendarStore = create(
       selectedNakshatra: null,   // full NakshatraMeta object from API
       year: currentYear,
       timezone: detectTimezone(),
-      lat: 19.08,                // Default: Mumbai
-      lon: 72.88,
-      locationLabel: 'Mumbai',   // Human-readable city name for PDF subtitle
+      lat: null,
+      lon: null,
+      locationLabel: null,
       calendarData: null,
       loading: false,
       error: null,

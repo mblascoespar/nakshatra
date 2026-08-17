@@ -177,7 +177,7 @@ export default function LocationSelector() {
             onClick={() => setOpen(true)}
             className="w-full bg-gray-700 text-white text-xs rounded px-2 py-1 border border-gray-600 text-left truncate hover:bg-gray-600"
           >
-            {locationLabel} ({utcOffset(timezone)})
+            {locationLabel ? `${locationLabel} (${utcOffset(timezone)})` : 'Select location'}
           </button>
         ) : (
           <input

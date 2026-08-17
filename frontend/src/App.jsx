@@ -4,6 +4,8 @@ import { auth } from './firebase'
 import { NAKSHATRAS } from './data/tarabalam'
 import { buildYearCalendar } from './data/calendar'
 import NakshatraSelector from './components/NakshatraSelector'
+import NakshatraBanner from './components/NakshatraBanner'
+import LocationBanner from './components/LocationBanner'
 import LocationSelector from './components/LocationSelector'
 import YearCalendar from './components/YearCalendar'
 import useCalendarStore from './store/useCalendarStore'
@@ -15,7 +17,7 @@ export default function App() {
     selectedNakshatra,
     year, setYear,
     timezone,
-    locationLabel,
+    lat, lon, locationLabel,
     calendarData, setCalendarData,
     loading, setLoading,
     error, setError,
@@ -23,7 +25,7 @@ export default function App() {
 
   // Re-build whenever nakshatra, year, timezone, or location changes
   useEffect(() => {
-    if (!selectedNakshatra) return
+    if (!selectedNakshatra || lat == null || lon == null) return
     setLoading(true)
     setError(null)
     const start = performance.now()
@@ -36,10 +38,14 @@ export default function App() {
         setError(err.message ?? 'Failed to load calendar')
       })
       .finally(() => setLoading(false))
-  }, [selectedNakshatra, year, timezone, locationLabel])
+  }, [selectedNakshatra, year, timezone, lat, lon, locationLabel])
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {!selectedNakshatra && <NakshatraBanner />}
+
+      {selectedNakshatra && (lat == null || lon == null) && <LocationBanner />}
+
       <header className="bg-gray-900 text-white px-6 py-4 shadow">
         <div className="max-w-screen-2xl mx-auto flex items-center justify-between">
           <div>
@@ -57,12 +63,14 @@ export default function App() {
                 <option key={y} value={y}>{y}</option>
               ))}
             </select>
-            <button
-              onClick={() => signOut(auth)}
-              className="bg-gray-700 hover:bg-gray-600 text-white text-xs rounded px-3 py-1 border border-gray-600 transition"
-            >
-              Sign out
-            </button>
+            {auth && (
+              <button
+                onClick={() => signOut(auth)}
+                className="bg-gray-700 hover:bg-gray-600 text-white text-xs rounded px-3 py-1 border border-gray-600 transition"
+              >
+                Sign out
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -72,12 +80,6 @@ export default function App() {
           <h2 className="text-sm font-semibold text-gray-700 mb-3">Client Birth Nakshatra</h2>
           <NakshatraSelector nakshatras={NAKSHATRAS} />
         </section>
-
-        {!selectedNakshatra && (
-          <div className="text-center py-20 text-gray-400">
-            <p className="text-lg">Select a Nakshatra above to generate the calendar</p>
-          </div>
-        )}
 
         {loading && (
           <div className="text-center py-20 text-gray-400">

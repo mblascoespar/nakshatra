@@ -30,8 +30,10 @@ function AuthGate() {
   return <App />
 }
 
+const authGateEnabled = import.meta.env.VITE_ENABLE_AUTH_GATE === 'true'
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthGate />
+    {authGateEnabled ? <AuthGate /> : <App />}
   </React.StrictMode>
 )
