@@ -47,12 +47,12 @@ export default function App() {
       {selectedNakshatra && (lat == null || lon == null) && <LocationBanner />}
 
       <header className="bg-gray-900 text-white px-6 py-4 shadow">
-        <div className="max-w-screen-2xl mx-auto flex items-center justify-between">
+        <div className="max-w-screen-2xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold tracking-tight">Nakshatra Tarabalam Calendar</h1>
             <p className="text-xs text-gray-400 mt-0.5">Vedic auspicious timing for practitioners</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <LocationSelector />
             <select
               value={year}

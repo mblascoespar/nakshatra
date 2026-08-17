@@ -7,8 +7,8 @@ export default function NakshatraBanner() {
 
   return (
     <div className="bg-indigo-600 text-white px-6 py-3">
-      <div className="max-w-screen-2xl mx-auto flex items-center justify-between gap-3">
-        <p className="text-sm font-medium">
+      <div className="max-w-screen-2xl mx-auto flex items-start sm:items-center justify-between gap-3">
+        <p className="text-sm font-medium min-w-0 flex-1">
           Don't know your birth Nakshatra? Find it with the{' '}
           <a
             href="https://www.prokerala.com/astrology/nakshatra-finder/"
@@ -23,7 +23,7 @@ export default function NakshatraBanner() {
         <button
           onClick={() => setDismissed(true)}
           aria-label="Dismiss"
-          className="text-indigo-200 hover:text-white text-xl leading-none px-1"
+          className="shrink-0 text-indigo-200 hover:text-white text-xl leading-none px-1"
         >
           ×
         </button>
