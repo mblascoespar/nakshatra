@@ -50,7 +50,7 @@ export default function App() {
         <div className="max-w-screen-2xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold tracking-tight">Nakshatra Tarabalam Calendar</h1>
-            <p className="text-xs text-gray-400 mt-0.5">Vedic auspicious timing for practitioners</p>
+            <p className="text-xs text-gray-400 mt-0.5">Strength of the day</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <LocationSelector />

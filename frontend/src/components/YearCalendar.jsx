@@ -50,9 +50,9 @@ export default function YearCalendar({ calendarData }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Legend */}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {BUCKET_LEGEND.map(({ bucket, label, color }) => (
               <span key={bucket} className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded border ${color}`}>
                 {label}
